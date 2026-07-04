@@ -92,11 +92,21 @@ function App() {
   const [isCreatingSession, setIsCreatingSession] = useState(false);
   const [sessionConnectionError, setSessionConnectionError] = useState<string | null>(null);
 
-  // Clear errors when changing roles
+  // Clear errors when changing roles & lock scrolling for dashboard view
   useEffect(() => {
     setSessionError(null);
     setDriverCode('');
     setStudentCodeInput('');
+
+    if (role) {
+      document.body.classList.add('dashboard-active');
+    } else {
+      document.body.classList.remove('dashboard-active');
+    }
+
+    return () => {
+      document.body.classList.remove('dashboard-active');
+    };
   }, [role, setSessionError]);
 
   // Keep sending GPS coordinates to socket when tracking is active
