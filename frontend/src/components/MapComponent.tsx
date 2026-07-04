@@ -141,16 +141,67 @@ const createSearchMarkerIcon = () => {
 interface CenterHandlerProps {
   center: [number, number] | null;
   shouldCenter: boolean;
+  vanLocation: Location | null;
 }
 
-const ChangeMapView: React.FC<CenterHandlerProps> = ({ center, shouldCenter }) => {
+const ChangeMapView: React.FC<CenterHandlerProps> = ({ center, shouldCenter, vanLocation }) => {
   const map = useMap();
+  const [hasCenteredOnce, setHasCenteredOnce] = React.useState(false);
+
+  useEffect(() => {
+    if (!vanLocation) {
+      setHasCenteredOnce(false);
+    }
+  }, [vanLocation]);
+
   useEffect(() => {
     if (center && shouldCenter) {
       map.flyTo(center, 15, { animate: true, duration: 1.5 });
+    } else if (vanLocation && !hasCenteredOnce) {
+      map.flyTo([vanLocation.lat, vanLocation.lng], 15, { animate: true, duration: 1.5 });
+      setHasCenteredOnce(true);
     }
-  }, [center, map, shouldCenter]);
+  }, [center, shouldCenter, vanLocation, hasCenteredOnce, map]);
+
   return null;
+};
+
+// Custom floating map button to re-center on the van manually
+const MapControls: React.FC<{ vanLocation: Location | null }> = ({ vanLocation }) => {
+  const map = useMap();
+  if (!vanLocation) return null;
+  
+  return (
+    <button
+      className="btn btn-outline"
+      style={{
+        position: 'absolute',
+        top: '80px',
+        left: '10px',
+        zIndex: 1000,
+        padding: '0.45rem 0.75rem',
+        fontSize: '0.75rem',
+        background: 'rgba(9, 13, 22, 0.85)',
+        border: '1px solid var(--border-card)',
+        borderRadius: '8px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '0.3rem',
+        color: 'var(--text-primary)',
+        cursor: 'pointer',
+        fontWeight: 700,
+        boxShadow: 'var(--shadow-md)',
+        pointerEvents: 'auto'
+      }}
+      onClick={(e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        map.flyTo([vanLocation.lat, vanLocation.lng], Math.max(map.getZoom(), 15), { animate: true, duration: 1.2 });
+      }}
+    >
+      🎯 Center on Van
+    </button>
+  );
 };
 
 // Component to handle map clicks for adding stops
@@ -204,12 +255,7 @@ export const MapComponent: React.FC<MapComponentProps> = ({
 
   const centerCoords = getInitialCenter();
 
-  // Determine target center for flyTo: override takes priority, then vanLocation
-  const activeCenter: [number, number] | null = mapCenterOverride
-    ? mapCenterOverride
-    : vanLocation
-      ? [vanLocation.lat, vanLocation.lng]
-      : null;
+
 
   return (
     <div className="map-container-wrapper" style={{ height: '100%', width: '100%', borderRadius: '18px', overflow: 'hidden' }}>
@@ -230,7 +276,14 @@ export const MapComponent: React.FC<MapComponentProps> = ({
         />
 
         {/* Change map view helper */}
-        <ChangeMapView center={activeCenter} shouldCenter={!!activeCenter} />
+        <ChangeMapView 
+          center={mapCenterOverride} 
+          shouldCenter={!!mapCenterOverride} 
+          vanLocation={vanLocation}
+        />
+
+        {/* Custom manual map controls (e.g. Center on Van button) */}
+        <MapControls vanLocation={vanLocation} />
 
         {/* Click handler helper */}
         <MapClickHandler onMapClick={onAddStop} enabled={enableStopAdding} />
