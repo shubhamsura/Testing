@@ -146,7 +146,7 @@ function App() {
     };
 
     sendUpdate();
-    updateInterval = setInterval(sendUpdate, 5000);
+    updateInterval = setInterval(sendUpdate, 2000);
 
     return () => clearInterval(updateInterval);
   }, [isWatching, simulationMode, simulatedLocation, geoLat, geoLng, geoSpeed, driverCode, stops, updateLocation]);

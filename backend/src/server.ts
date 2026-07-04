@@ -129,6 +129,13 @@ io.on('connection', (socket) => {
       if (role === 'driver') {
         session.status = 'active';
         session.driverSocketId = socket.id;
+        
+        // Clear grace period timeout if driver reconnects
+        if ((session as any).disconnectTimeoutId) {
+          clearTimeout((session as any).disconnectTimeoutId);
+          (session as any).disconnectTimeoutId = undefined;
+          console.log(`Driver reconnected to session ${upperCode}. Grace period canceled.`);
+        }
       }
       // Send the current session state to the joining socket (especially for late-joining students)
       socket.emit('session-state', session);
@@ -167,8 +174,16 @@ io.on('connection', (socket) => {
     if (session) {
       session.status = 'active';
       session.lastLocation = locationData;
+      session.driverSocketId = socket.id;
       if (stops) {
         session.stops = stops;
+      }
+      
+      // Clear grace period timeout if location updates keep coming in
+      if ((session as any).disconnectTimeoutId) {
+        clearTimeout((session as any).disconnectTimeoutId);
+        (session as any).disconnectTimeoutId = undefined;
+        console.log(`Driver updated location for session ${upperCode}. Grace period canceled.`);
       }
     }
 
@@ -206,10 +221,15 @@ io.on('connection', (socket) => {
     for (const code in sessions) {
       const session = sessions[code];
       if (session.driverSocketId === socket.id) {
-        console.log(`Driver disconnected abruptly from session ${code}`);
-        session.status = 'inactive';
-        session.driverSocketId = undefined;
-        io.to(code).emit('session-stopped', { driverCode: code });
+        console.log(`Driver disconnected abruptly from session ${code}. Waiting 35s grace period...`);
+        
+        // Wait 35 seconds before declaring offline, to handle phone calls or background switching
+        (session as any).disconnectTimeoutId = setTimeout(() => {
+          console.log(`Grace period expired. Marking session ${code} as inactive.`);
+          session.status = 'inactive';
+          session.driverSocketId = undefined;
+          io.to(code).emit('session-stopped', { driverCode: code });
+        }, 35000);
       }
     }
   });

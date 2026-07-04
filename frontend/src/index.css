@@ -808,3 +808,8 @@ body.dashboard-active {
     font-size: 1.15rem !important;
   }
 }
+
+/* Buttery smooth Uber-like sliding animations for Leaflet markers */
+.custom-leaflet-icon {
+  transition: transform 2s linear !important;
+}
