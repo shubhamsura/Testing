@@ -395,9 +395,9 @@ body {
 
 .btn {
   font-family: var(--font-sans);
-  font-weight: 600;
+  font-weight: 700;
   font-size: 0.95rem;
-  padding: 0.75rem 1.5rem;
+  padding: 0.85rem 1.5rem;
   border-radius: 12px;
   border: 1px solid transparent;
   cursor: pointer;
@@ -409,27 +409,27 @@ body {
 }
 
 .btn-primary {
-  background: var(--primary);
+  background: linear-gradient(135deg, var(--primary) 0%, #4f46e5 100%);
   color: #fff;
-  box-shadow: 0 4px 12px var(--primary-glow);
+  box-shadow: 0 4px 15px var(--primary-glow);
 }
 
 .btn-primary:hover {
-  background: #4f46e5;
+  background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
   transform: translateY(-2px);
-  box-shadow: 0 6px 18px rgba(99, 102, 241, 0.5);
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.6);
 }
 
 .btn-secondary {
-  background: var(--secondary);
+  background: linear-gradient(135deg, var(--secondary) 0%, #0d9488 100%);
   color: #fff;
-  box-shadow: 0 4px 12px var(--secondary-glow);
+  box-shadow: 0 4px 15px var(--secondary-glow);
 }
 
 .btn-secondary:hover {
-  background: #0d9488;
+  background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%);
   transform: translateY(-2px);
-  box-shadow: 0 6px 18px rgba(20, 184, 166, 0.5);
+  box-shadow: 0 6px 20px rgba(20, 184, 166, 0.6);
 }
 
 .btn-outline {
