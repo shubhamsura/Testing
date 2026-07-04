@@ -396,18 +396,18 @@ function App() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.85rem' }}>
             {isConnected ? (
               <span style={{ color: 'var(--secondary)', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                <Wifi size={16} /> Server Connected
+                <Wifi size={16} /> <span className="header-status-text">Server Connected</span>
               </span>
             ) : (
               <span style={{ color: 'var(--error)', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                <WifiOff size={16} /> Connecting...
+                <WifiOff size={16} /> <span className="header-status-text">Connecting...</span>
               </span>
             )}
           </div>
 
           {role && (
             <div className="role-badge" onClick={handleBackToRoles}>
-              Switch Mode ({role === 'driver' ? 'Driver' : 'Student'})
+              Switch Mode
             </div>
           )}
         </div>

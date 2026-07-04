@@ -707,4 +707,50 @@ body {
     overflow: hidden;
     padding-bottom: 0 !important;
   }
+
+  /* Stack role selector cards on mobile to avoid squeezing */
+  .selector-grid {
+    grid-template-columns: 1fr !important;
+    gap: 1.25rem !important;
+    width: 100%;
+    max-width: 450px;
+    margin: 0 auto;
+  }
+  
+  .role-selection-overlay {
+    min-height: calc(100vh - 80px) !important;
+    padding: 1.5rem 1rem !important;
+    align-items: center !important;
+    display: flex;
+    overflow-y: auto;
+  }
+  
+  .role-selector-card {
+    padding: 1.5rem !important;
+    margin-bottom: 0 !important;
+  }
+
+  .role-title {
+    font-size: 1.3rem !important;
+    margin-bottom: 0.5rem !important;
+  }
+  
+  .role-description {
+    font-size: 0.85rem !important;
+    margin-bottom: 1.25rem !important;
+  }
+
+  /* Hide connection status text to leave only the wifi icon on small screens */
+  .header-status-text {
+    display: none !important;
+  }
+
+  /* Hide campus tagline to prevent header collision */
+  .logo-tag {
+    display: none !important;
+  }
+  
+  .logo-text {
+    font-size: 1.15rem !important;
+  }
 }
