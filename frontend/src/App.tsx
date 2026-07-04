@@ -958,8 +958,11 @@ function App() {
           <section style={{ position: 'relative', width: '100%', height: '100%' }}>
             <MapComponent
               vanLocation={
-                role === 'driver' && simulationMode
-                  ? (simulatedLocation ? { lat: simulatedLocation.lat, lng: simulatedLocation.lng, timestamp: Date.now() } : null)
+                role === 'driver'
+                  ? (simulationMode
+                      ? (simulatedLocation ? { lat: simulatedLocation.lat, lng: simulatedLocation.lng, timestamp: Date.now() } : null)
+                      : (geoLat && geoLng ? { lat: geoLat, lng: geoLng, speed: geoSpeed || 0, timestamp: Date.now() } : null)
+                    )
                   : (currentSessionState?.lastLocation || null)
               }
               stops={stops}
