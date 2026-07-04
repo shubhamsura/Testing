@@ -667,3 +667,44 @@ body {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+
+.mobile-summary-header {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  /* Mobile-specific card overrides inside sliding drawer */
+  .sidebar-container .glass-card {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0.5rem 0 !important;
+    margin: 0 !important;
+  }
+  
+  .sidebar-container {
+    gap: 1rem !important;
+  }
+  
+  /* Collapsed drawer layout overrides */
+  .sidebar-container.collapsed .mobile-summary-header {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    cursor: pointer;
+    min-height: 44px;
+    padding: 0.25rem 0.5rem;
+  }
+  
+  .sidebar-container.collapsed > *:not(.drawer-handle):not(.mobile-summary-header) {
+    display: none !important;
+  }
+  
+  /* Make sure the collapsed drawer height is exactly compact on mobile */
+  .sidebar-container.collapsed {
+    transform: translateY(calc(100% - 75px));
+    height: 75px !important;
+    overflow: hidden;
+    padding-bottom: 0 !important;
+  }
+}

@@ -85,7 +85,7 @@ function App() {
   const [studentGeoLocation, setStudentGeoLocation] = useState<{ lat: number; lng: number } | null>(null);
   
   // Mobile drawer state
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(true);
   const [mapStyle, setMapStyle] = useState<'roadmap' | 'satellite'>('roadmap');
   
   // Loading & Connection Error states
@@ -448,6 +448,47 @@ function App() {
           {/* Sidebar (Responsive Bottom Sheet Drawer on Mobile) */}
           <section className={`sidebar-container ${isDrawerOpen ? 'expanded' : 'collapsed'}`}>
             <div className="drawer-handle" onClick={() => setIsDrawerOpen(!isDrawerOpen)}></div>
+            
+            {/* Mobile-only summary header when collapsed */}
+            <div className="mobile-summary-header" onClick={() => setIsDrawerOpen(true)}>
+              {role === 'driver' ? (
+                !driverCode ? (
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                    <span style={{ fontWeight: 600, color: 'var(--primary)' }}>🚗 Ready to Start Ride</span>
+                    <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Tap to setup ↗</span>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <span className="live-badge" style={{ padding: '0.2rem 0.5rem', fontSize: '0.7rem', display: 'flex', alignItems: 'center' }}>
+                        <span className="pulse-dot"></span> LIVE
+                      </span>
+                      <strong style={{ fontFamily: 'monospace', fontSize: '1.1rem' }}>{driverCode}</strong>
+                    </div>
+                    <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{stops.length} stops active</span>
+                  </div>
+                )
+              ) : (
+                !driverCode ? (
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                    <span style={{ fontWeight: 600, color: 'var(--secondary)' }}>🔍 Track College Van</span>
+                    <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Tap to enter code ↗</span>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <span className="live-badge" style={{ padding: '0.2rem 0.5rem', fontSize: '0.7rem', display: 'flex', alignItems: 'center' }}>
+                        <span className="pulse-dot"></span> TRACKING
+                      </span>
+                      <strong style={{ fontFamily: 'monospace', fontSize: '1.1rem' }}>{driverCode}</strong>
+                    </div>
+                    <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                      {currentSessionState?.status === 'active' ? 'Active' : 'Offline'}
+                    </span>
+                  </div>
+                )
+              )}
+            </div>
             
             {/* DRIVER DASHBOARD */}
             {role === 'driver' && (
