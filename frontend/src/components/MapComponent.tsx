@@ -179,6 +179,7 @@ interface MapComponentProps {
   mapCenterOverride?: [number, number] | null;
   searchResults?: any[];
   onSelectSearchResult?: (result: any) => void;
+  mapStyle?: 'roadmap' | 'satellite';
 }
 
 export const MapComponent: React.FC<MapComponentProps> = ({
@@ -190,6 +191,7 @@ export const MapComponent: React.FC<MapComponentProps> = ({
   mapCenterOverride = null,
   searchResults = [],
   onSelectSearchResult,
+  mapStyle = 'roadmap',
 }) => {
   // Determine default center: van location, student location, first stop, or fallback (VIT Bhopal)
   const getInitialCenter = (): [number, number] => {
@@ -220,7 +222,11 @@ export const MapComponent: React.FC<MapComponentProps> = ({
         {/* Google Maps Road Tile Layer - Displays real landmarks, footprints, shops and streets */}
         <TileLayer
           attribution='&copy; Google Maps'
-          url="https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}"
+          url={
+            mapStyle === 'satellite'
+              ? "https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}"
+              : "https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}"
+          }
         />
 
         {/* Change map view helper */}

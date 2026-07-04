@@ -86,6 +86,11 @@ function App() {
   
   // Mobile drawer state
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [mapStyle, setMapStyle] = useState<'roadmap' | 'satellite'>('roadmap');
+  
+  // Loading & Connection Error states
+  const [isCreatingSession, setIsCreatingSession] = useState(false);
+  const [sessionConnectionError, setSessionConnectionError] = useState<string | null>(null);
 
   // Clear errors when changing roles
   useEffect(() => {
@@ -172,22 +177,36 @@ function App() {
 
   // Driver Starts session
   const handleStartTrip = async () => {
-    // 1. Create a session on the backend (generates a unique code)
-    const session = await createSession(stops);
-    if (session) {
-      const generatedCode = session.driverCode;
-      setDriverCode(generatedCode);
-      setIsDrawerOpen(false); // Collapse drawer to show full map initially
-      
-      // 2. Join the session as a driver
-      joinSession(generatedCode, 'driver');
+    setSessionConnectionError(null);
+    setIsCreatingSession(true);
+    
+    // 1. Immediately request location permission (critical for iOS/Safari immediate click gesture rule)
+    if (!simulationMode) {
+      startWatching();
+    }
 
-      // 3. Initialize coordinates near VIT Bhopal campus (23.0772, 76.8513)
-      if (simulationMode) {
-        setSimulatedLocation({ lat: 23.0772, lng: 76.8513 });
+    try {
+      // 2. Create session on backend
+      const session = await createSession(stops);
+      if (session) {
+        const generatedCode = session.driverCode;
+        setDriverCode(generatedCode);
+        setIsDrawerOpen(false); // Collapse drawer to show full map initially
+        joinSession(generatedCode, 'driver');
+        
+        if (simulationMode) {
+          setSimulatedLocation({ lat: 23.0772, lng: 76.8513 });
+        }
       } else {
-        startWatching();
+        setSessionConnectionError("Failed to register session. The server might be offline or sleeping.");
+        stopWatching();
       }
+    } catch (err) {
+      console.error(err);
+      setSessionConnectionError("Could not connect to tracking server. Check your connection.");
+      stopWatching();
+    } finally {
+      setIsCreatingSession(false);
     }
   };
 
@@ -452,8 +471,26 @@ function App() {
                         </label>
                       </div>
 
-                      <button className="btn btn-primary" onClick={handleStartTrip} style={{ width: '100%' }}>
-                        Start Ride & Generate Code
+                      {sessionConnectionError && (
+                        <div style={{ display: 'flex', gap: '0.5rem', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid var(--error)', padding: '0.75rem', borderRadius: '12px', color: 'var(--error)', fontSize: '0.85rem' }}>
+                          <AlertCircle size={18} style={{ flexShrink: 0 }} />
+                          <span>{sessionConnectionError}</span>
+                        </div>
+                      )}
+
+                      <button 
+                        className="btn btn-primary" 
+                        onClick={handleStartTrip} 
+                        style={{ width: '100%' }}
+                        disabled={isCreatingSession}
+                      >
+                        {isCreatingSession ? (
+                          <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <RefreshCw className="spin-loader" size={16} /> Waking up server...
+                          </span>
+                        ) : (
+                          'Start Ride & Generate Code'
+                        )}
                       </button>
                     </div>
                   ) : (
@@ -858,7 +895,34 @@ function App() {
               mapCenterOverride={mapCenterOverride}
               searchResults={searchResults}
               onSelectSearchResult={selectSearchResult}
+              mapStyle={mapStyle}
             />
+
+            {/* Map Style Toggle Button */}
+            <button
+              className="btn btn-outline"
+              style={{
+                position: 'absolute',
+                bottom: '25px',
+                left: '20px',
+                zIndex: 1000,
+                padding: '0.5rem 0.85rem',
+                fontSize: '0.8rem',
+                background: 'rgba(9, 13, 22, 0.85)',
+                border: '1px solid var(--border-card)',
+                borderRadius: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.35rem',
+                color: 'var(--text-primary)',
+                cursor: 'pointer',
+                fontWeight: 600,
+                boxShadow: 'var(--shadow-md)'
+              }}
+              onClick={() => setMapStyle(mapStyle === 'roadmap' ? 'satellite' : 'roadmap')}
+            >
+              🗺️ {mapStyle === 'roadmap' ? 'Satellite View' : 'Standard View'}
+            </button>
 
             {/* Float HUD */}
             <div style={{
