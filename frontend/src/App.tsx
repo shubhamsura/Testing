@@ -91,6 +91,7 @@ function App() {
   // Loading & Connection Error states
   const [isCreatingSession, setIsCreatingSession] = useState(false);
   const [sessionConnectionError, setSessionConnectionError] = useState<string | null>(null);
+  const [countdown, setCountdown] = useState(50);
 
   // Clear errors when changing roles & lock scrolling for dashboard view
   useEffect(() => {
@@ -189,6 +190,11 @@ function App() {
   const handleStartTrip = async () => {
     setSessionConnectionError(null);
     setIsCreatingSession(true);
+    setCountdown(50);
+
+    const timer = setInterval(() => {
+      setCountdown((prev) => (prev > 1 ? prev - 1 : 1));
+    }, 1000);
     
     // 1. Immediately request location permission (critical for iOS/Safari immediate click gesture rule)
     if (!simulationMode) {
@@ -208,14 +214,15 @@ function App() {
           setSimulatedLocation({ lat: 23.0772, lng: 76.8513 });
         }
       } else {
-        setSessionConnectionError("Failed to register session. The server might be offline or sleeping.");
+        setSessionConnectionError("Failed to wake up tracking server. Render's free tier takes up to 50 seconds to boot. Please wait and try again.");
         stopWatching();
       }
     } catch (err) {
       console.error(err);
-      setSessionConnectionError("Could not connect to tracking server. Check your connection.");
+      setSessionConnectionError("Could not connect to tracking server. Check your VITE_BACKEND_URL variable.");
       stopWatching();
     } finally {
+      clearInterval(timer);
       setIsCreatingSession(false);
     }
   };
@@ -376,6 +383,7 @@ function App() {
   };
 
   const isCurrentlyTracking = isWatching || (simulationMode && simulatedLocation !== null);
+  const isProdFallback = window.location.hostname !== 'localhost' && BACKEND_URL.includes('localhost');
 
   const handleBackToRoles = () => {
     handleStopTrip();
@@ -511,6 +519,13 @@ function App() {
 
                   {!driverCode ? (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                      {geoError && !simulationMode && (
+                        <div style={{ display: 'flex', gap: '0.5rem', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid var(--error)', padding: '0.75rem', borderRadius: '12px', color: 'var(--error)', fontSize: '0.85rem' }}>
+                          <AlertCircle size={18} style={{ flexShrink: 0 }} />
+                          <span><strong>GPS Permission Blocked:</strong> {geoError}. Please enable location permissions in browser settings.</span>
+                        </div>
+                      )}
+
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                         <label className="input-label" style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', cursor: 'pointer' }}>
                           <input
@@ -536,8 +551,8 @@ function App() {
                         disabled={isCreatingSession}
                       >
                         {isCreatingSession ? (
-                          <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                            <RefreshCw className="spin-loader" size={16} /> Waking up server...
+                          <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem' }}>
+                            <RefreshCw className="spin-loader" size={16} /> Waking up server ({countdown}s)...
                           </span>
                         ) : (
                           'Start Ride & Generate Code'
@@ -929,6 +944,14 @@ function App() {
                 )}
               </>
             )}
+
+            {/* Diagnostics footer */}
+            <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', textAlign: 'center', marginTop: 'auto', paddingTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+              <div>API Host: <code style={{ color: 'var(--text-secondary)' }}>{BACKEND_URL}</code></div>
+              {isProdFallback && (
+                <div style={{ color: 'var(--accent)', fontWeight: 600 }}>⚠️ warning: Using localhost API in production. Set VITE_BACKEND_URL on Vercel.</div>
+              )}
+            </div>
           </section>
 
           {/* Map Section */}
