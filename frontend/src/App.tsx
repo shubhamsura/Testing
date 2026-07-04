@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { 
   Car, 
   User, 
@@ -92,6 +92,7 @@ function App() {
   const [isCreatingSession, setIsCreatingSession] = useState(false);
   const [sessionConnectionError, setSessionConnectionError] = useState<string | null>(null);
   const [countdown, setCountdown] = useState(50);
+  const backgroundAudioRef = useRef<HTMLAudioElement | null>(null);
 
   // Clear errors when changing roles & lock scrolling for dashboard view
   useEffect(() => {
@@ -109,6 +110,13 @@ function App() {
       document.body.classList.remove('dashboard-active');
     };
   }, [role, setSessionError]);
+
+  // Auto re-join session room when socket reconnects
+  useEffect(() => {
+    if (isConnected && driverCode && role) {
+      joinSession(driverCode, role);
+    }
+  }, [isConnected, driverCode, role, joinSession]);
 
   // Keep sending GPS coordinates to socket when tracking is active
   useEffect(() => {
@@ -210,6 +218,17 @@ function App() {
         setIsDrawerOpen(false); // Collapse drawer to show full map initially
         joinSession(generatedCode, 'driver');
         
+        // 3. Play silent audio in loop (audio wake lock) to prevent mobile OS from suspending execution in the background
+        try {
+          const silentAudio = new Audio("data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA");
+          silentAudio.loop = true;
+          silentAudio.play();
+          backgroundAudioRef.current = silentAudio;
+          console.log("Background audio wake lock engaged.");
+        } catch (e) {
+          console.warn("Background audio blocker bypass failed:", e);
+        }
+
         if (simulationMode) {
           setSimulatedLocation({ lat: 23.0772, lng: 76.8513 });
         }
@@ -237,6 +256,17 @@ function App() {
     setStops([]);
     setMapCenterOverride(null);
     setSearchResults([]);
+
+    // Stop background audio wake lock
+    if (backgroundAudioRef.current) {
+      try {
+        backgroundAudioRef.current.pause();
+        backgroundAudioRef.current = null;
+        console.log("Background audio wake lock released.");
+      } catch (e) {
+        console.error("Failed to release background audio:", e);
+      }
+    }
   };
 
   // Student starts tracking
